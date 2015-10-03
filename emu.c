@@ -410,148 +410,146 @@ void op_NOP(u8 op, u8 arg) {
     // do nuttin
 }
 
-void emulate(void) {
-    u8 op = 0, arg = 0;
-    op_handler_t handler = op_NOP;
+u8 op = 0, arg = 0;
+op_handler_t handler = op_NOP;
 
-    while (1) {
-        frame_pc = pc;
-        FETCH(op);
-        // TODO check overflow
+void sm5_cycle(void) {
+    frame_pc = pc;
+    FETCH(op);
+    // TODO check overflow
 
-        // NOP
-        if (op == 0x00) {
-            handler = op_NOP;
-        }
+    // NOP
+    if (op == 0x00) {
+        handler = op_NOP;
+    }
 
-        // address control
-        else if (op >= 0x80 && op <= 0xBF) {
-            handler = op_TR;
-        } else if (op >= 0xE0 && op <= 0xEF) {
-            FETCH(arg);
-            handler = op_TL;
-        } else if (op >= 0xC0 && op <= 0xDF) {
-            handler = op_TRS;
-        } else if (op >= 0xF0 && op <= 0xFF) {
-            FETCH(arg);
-            handler = op_CALL;
-        } else if (op == 0x7D) {
-            handler = op_RTN;
-        } else if (op == 0x7E) {
-            handler = op_RTNS;
-        } else if (op == 0x7F) {
-            handler = op_RTN; // XXX does this need any other side effects?
-        }
+    // address control
+    else if (op >= 0x80 && op <= 0xBF) {
+        handler = op_TR;
+    } else if (op >= 0xE0 && op <= 0xEF) {
+        FETCH(arg);
+        handler = op_TL;
+    } else if (op >= 0xC0 && op <= 0xDF) {
+        handler = op_TRS;
+    } else if (op >= 0xF0 && op <= 0xFF) {
+        FETCH(arg);
+        handler = op_CALL;
+    } else if (op == 0x7D) {
+        handler = op_RTN;
+    } else if (op == 0x7E) {
+        handler = op_RTNS;
+    } else if (op == 0x7F) {
+        handler = op_RTN; // XXX does this need any other side effects?
+    }
 
-        // data transfer
-        else if (op >= 0x10 && op <= 0x1F) {
-            handler = op_LAX;
-        } else if (op >= 0x30 && op <= 0x3F) {
-            handler = op_LBMX;
-        } else if (op >= 0x20 && op <= 0x2F) {
-            handler = op_LBLX;
-        } else if (op >= 0x50 && op <= 0x53) {
-            handler = op_LDA;
-        } else if (op >= 0x54 && op <= 0x57) {
-            handler = op_EXC;
-        } else if (op >= 0x58 && op <= 0x5B) {
-            handler = op_EXCI;
-        } else if (op >= 0x5C && op <= 0x5F) {
-            handler = op_EXCD;
-        } else if (op == 0x64) {
-            handler = op_EXAX;
-        } else if (op == 0x65) {
-            handler = op_ATX;
-        } else if (op == 0x66) {
-            handler = op_EXBM;
-        } else if (op == 0x67) {
-            handler = op_EXBL;
-        } else if (op == 0x68) {
-            handler = op_EX;
-        }
+    // data transfer
+    else if (op >= 0x10 && op <= 0x1F) {
+        handler = op_LAX;
+    } else if (op >= 0x30 && op <= 0x3F) {
+        handler = op_LBMX;
+    } else if (op >= 0x20 && op <= 0x2F) {
+        handler = op_LBLX;
+    } else if (op >= 0x50 && op <= 0x53) {
+        handler = op_LDA;
+    } else if (op >= 0x54 && op <= 0x57) {
+        handler = op_EXC;
+    } else if (op >= 0x58 && op <= 0x5B) {
+        handler = op_EXCI;
+    } else if (op >= 0x5C && op <= 0x5F) {
+        handler = op_EXCD;
+    } else if (op == 0x64) {
+        handler = op_EXAX;
+    } else if (op == 0x65) {
+        handler = op_ATX;
+    } else if (op == 0x66) {
+        handler = op_EXBM;
+    } else if (op == 0x67) {
+        handler = op_EXBL;
+    } else if (op == 0x68) {
+        handler = op_EX;
+    }
 
-        // arithmetic
-        else if (op >= 0x00 && op <= 0x0F) {
-            handler = op_ADX;
-        } else if (op == 0x7A) {
-            handler = op_ADD;
-        } else if (op == 0x7B) {
-            handler = op_ADC;
-        } else if (op == 0x79) {
-            handler = op_COMA;
-        } else if (op == 0x78) {
-            handler = op_INCB;
-        } else if (op == 0x7C) {
-            handler = op_DECB;
-        }
+    // arithmetic
+    else if (op >= 0x00 && op <= 0x0F) {
+        handler = op_ADX;
+    } else if (op == 0x7A) {
+        handler = op_ADD;
+    } else if (op == 0x7B) {
+        handler = op_ADC;
+    } else if (op == 0x79) {
+        handler = op_COMA;
+    } else if (op == 0x78) {
+        handler = op_INCB;
+    } else if (op == 0x7C) {
+        handler = op_DECB;
+    }
 
-        // test
-        else if (op == 0x6E) {
-            handler = op_TC;
-        } else if (op == 0x6F) {
-            handler = op_TAM;
-        } else if (op >= 0x48 && op <= 0x4B) {
-            handler = op_TM;
-        } else if (op == 0x6B) {
-            handler = op_TABL;
-        } else if (op >= 0x4C && op <= 0x4F) {
-            handler = op_TPB;
-        }
+    // test
+    else if (op == 0x6E) {
+        handler = op_TC;
+    } else if (op == 0x6F) {
+        handler = op_TAM;
+    } else if (op >= 0x48 && op <= 0x4B) {
+        handler = op_TM;
+    } else if (op == 0x6B) {
+        handler = op_TABL;
+    } else if (op >= 0x4C && op <= 0x4F) {
+        handler = op_TPB;
+    }
 
-        // bit manip
-        else if (op >= 0x40 && op <= 0x43) {
-            handler = op_RM;
-        } else if (op >= 0x44 && op <= 0x47) {
-            handler = op_SM;
-        } else if (op == 0x61) {
-            handler = op_SC;
-        } else if (op == 0x60) {
-            handler = op_RC;
-        } else if (op == 0x62) {
-            handler = op_ID;
-        } else if (op == 0x63) {
-            handler = op_IE;
-        }
+    // bit manip
+    else if (op >= 0x40 && op <= 0x43) {
+        handler = op_RM;
+    } else if (op >= 0x44 && op <= 0x47) {
+        handler = op_SM;
+    } else if (op == 0x61) {
+        handler = op_SC;
+    } else if (op == 0x60) {
+        handler = op_RC;
+    } else if (op == 0x62) {
+        handler = op_ID;
+    } else if (op == 0x63) {
+        handler = op_IE;
+    }
 
-        // io control
-        else if (op == 0x71) {
-            handler = op_OUTL;
-        } else if (op == 0x75) {
-            handler = op_OUT;
-        }
-
-
-        // unknown
-        else if (op == 0x6A) {
-            FETCH(arg);
-            handler = op_PAT;
-        } else if (op == 0x69) {
-            FETCH(arg);
-            handler = op_DTA;
-        }
+    // io control
+    else if (op == 0x71) {
+        handler = op_OUTL;
+    } else if (op == 0x75) {
+        handler = op_OUT;
+    }
 
 
-        else {
-            printf("nope %02x\n", op);
-            abort();
-        }
+    // unknown
+    else if (op == 0x6A) {
+        FETCH(arg);
+        handler = op_PAT;
+    } else if (op == 0x69) {
+        FETCH(arg);
+        handler = op_DTA;
+    }
 
-        debugger(op, arg);
 
-        if (interrupt) {
-            stack[sp] = pc;
-            ++sp;
-            pc.page = 0x2;
-            pc.addr = 0;
-            interrupt = 0;
+    else {
+        printf("nope %02x\n", op);
+        abort();
+    }
+
+    debugger(op, arg);
+
+    if (interrupt) {
+        stack[sp] = pc;
+        ++sp;
+        pc.page = 0x2;
+        pc.addr = 0;
+        interrupt = 0;
+    } else {
+        cycle += pc.addr - frame_pc.addr;
+
+        if (!skip) {
+            handler(op, arg);
         } else {
-            cycle += pc.addr - frame_pc.addr;
-
-            if (!skip) {
-                handler(op, arg);
-            } else {
-                skip = 0;
-            }
+            skip = 0;
         }
     }
 }
@@ -903,6 +901,7 @@ void stop_run(int signum) {
     run = 0;
 }
 
+#if 0
 int main(int argc, char **argv) {
     FILE *rom_file = NULL;
     int i;
@@ -942,3 +941,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+#endif
+
